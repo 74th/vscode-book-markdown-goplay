@@ -93,7 +93,7 @@ const runGoCode = (code: string): string => {
  * @param targetLine 挿入先の行数
  * @param text 挿入する
  */
-const appendMDText = (editor: vscode.   TextEditor, targetLine: number, text: string) => {
+const appendMDText = (editor: vscode.TextEditor, targetLine: number, text: string) => {
     let eol: string;
     switch(editor.document.eol){
         case vscode.EndOfLine.CRLF:
