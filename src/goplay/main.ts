@@ -8,7 +8,7 @@ class NotFoundCodeSectonError extends Error {}
 class ExecutionError extends Error {}
 
 /**
-     * マークダウン内のGoコードの実行する
+ * マークダウン内のGoコードの実行する
  */
 export class MarkdownGoplay {
     private outputChannel: vscode.OutputChannel;
@@ -24,7 +24,6 @@ export class MarkdownGoplay {
      * マークダウン内のGoコードの実行のメイン処理
      */
     public run = () => {
-
         if (!vscode.window.activeTextEditor) {
             // アクティブなテキストエディタがない場合実行しない
             return;
