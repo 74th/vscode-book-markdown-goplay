@@ -8,32 +8,40 @@ class NotFoundCodeSectonError extends Error {}
 class ExecutionError extends Error {}
 
 /**
- * メイン
+     * マークダウン内のGoコードの実行する
  */
 export class MarkdownGoplay {
-
     private outputChannel: vscode.OutputChannel;
 
     constructor() {
-        this.outputChannel = vscode.window.createOutputChannel("markdown-goplay");
+        // OUTPUTパネルaにmarkdown-goplayを追加
+        this.outputChannel = vscode.window.createOutputChannel(
+            "markdown-goplay"
+        );
     }
 
+    /**
+     * マークダウン内のGoコードの実行のメイン処理
+     */
     public run = () => {
+
         if (!vscode.window.activeTextEditor) {
-        return;
+            // アクティブなテキストエディタがない場合実行しない
+            return;
         }
 
         try {
             const editor = vscode.window.activeTextEditor;
             const [code, endLine] = this.detectSource(editor);
-            const output = this.runGoCode(code);
+            const cwd = this.getWorkdir(editor);
+            const output = this.runGoCode(code, cwd);
             this.appendMDText(editor, endLine, output);
         } catch (e) {
             if (e instanceof NotFoundCodeSectonError) {
                 vscode.window.showErrorMessage("Not found go code section.");
             }
         }
-    }
+    };
 
     /**
      * マークダウンの中のソースコード抽出
@@ -73,12 +81,29 @@ export class MarkdownGoplay {
     };
 
     /**
+     * ワークディレクトリの取得
+     * @returns ワークディレクトリ
+     */
+    private getWorkdir = (editor: vscode.TextEditor): string => {
+        // 設定を取得する
+        const conf = vscode.workspace.getConfiguration("markdownGoplay");
+        // markdownGoplay.workdir
+        const workdir = conf.get("workdir");
+        if (workdir) {
+            // 設定を取得した場合
+            return workdir as string;
+        }
+        // 設定が取得できない場合、開いているファイルのディレクトリとする
+        let fileDir = path.dirname(editor.document.uri.fsPath);
+        return fileDir;
+    };
+
+    /**
      * goのコマンドの実行
      * @param code ソースコードのテキスト
      * @returns 出力
      */
-    private runGoCode = (code: string): string => {
-
+    private runGoCode = (code: string, cwd: string): string => {
         // 前のOUTPUTを消去する
         this.outputChannel.clear();
 
@@ -86,16 +111,21 @@ export class MarkdownGoplay {
         fs.writeFileSync(codePath, code);
         const cmd = "go run " + codePath;
 
+        // 出力パネルに実行コマンドを書き出す
         this.outputChannel.appendLine(cmd);
 
         try {
-            const buf = child_process.execSync(cmd);
+            // コマンドの実行
+            const buf = child_process.execSync(cmd, { cwd });
+
             // 正常終了
+            // 出力を出力パネルに書き出す
             const stdout = buf.toString();
             this.outputChannel.append(stdout);
             return stdout;
         } catch (e) {
             // 異常終了
+            // エラー出力を出力パネルに書き出して、表示する
             this.outputChannel.append(e.stderr.toString());
             this.outputChannel.show();
             throw new ExecutionError();
@@ -113,6 +143,7 @@ export class MarkdownGoplay {
         targetLine: number,
         text: string
     ) => {
+        // 改行コードを開いているエディタのテキストに合わせる
         let eol: string;
         switch (editor.document.eol) {
             case vscode.EndOfLine.CRLF:
@@ -122,6 +153,7 @@ export class MarkdownGoplay {
         }
         const outputText = "```" + eol + text + eol + "```" + eol;
         editor.edit(edit => {
+            // 書き込み
             edit.insert(new vscode.Position(targetLine, 0), outputText);
         });
     };
