@@ -24,10 +24,31 @@
         "configuration": {
             "title": "goplay configuration",
             "properties": {
-                "markdownGoplay.workdir":{
+                "markdownGoplay.workdir": {
                     "type": "string",
                     "default": "",
                     "description": "Workdir for go run. When null, it uses a dir of the current file."
+                },
+                "markdownGoplay.onlyStdout": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "output only stdout"
+                },
+                "markdownGoplay.logLevel": {
+                    "type": "string",
+                    "default": "error",
+                    "description": "log level",
+                    "enum": [
+                        "info",
+                        "warning",
+                        "error",
+                        "fatal"
+                    ]
+                },
+                "markdownGoplay.maxLine": {
+                    "type": "number",
+                    "default": 100,
+                    "description": "max line number"
                 }
             }
         }
