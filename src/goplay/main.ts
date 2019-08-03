@@ -43,7 +43,7 @@ export class MarkdownGoplay {
         vscode.window.showErrorMessage("Not found go code section.");
       }
     }
-  };
+  }
 
   /**
    * マークダウンの中のソースコード抽出
@@ -168,5 +168,5 @@ export class MarkdownGoplay {
       // 書き込み
       edit.insert(new vscode.Position(targetLine, 0), outputText);
     });
-  };
+  }
 }
